@@ -198,11 +198,74 @@ weather_df %>%
 ```
 #### Ridge Plots
 
+These work best when you have plenty of different groups.
+
 ```{r}
 
 weather_df %>% 
   ggplot(aes(x = tmin, y = name)) + 
   geom_density_ridges()
+
+```
+## Learning Assessment 2
+
+Histogram:
+
+```{r}
+
+weather_df %>%
+  ggplot(aes(x = prcp, fill = name)) +
+  geom_histogram(color = "black") + 
+  facet_grid (. ~ name)
+
+```
+Density Plot:
+
+```{r}
+
+weather_df %>%
+  ggplot(aes(x = prcp, fill = name)) + 
+  geom_density(alpha = 0.4)
+
+```
+
+Boxplot:
+
+```{r}
+
+weather_df %>%
+  ggplot(aes(x = name, y = prcp, fill = name)) +
+  geom_boxplot()
+
+```
+Violinplot:
+
+```{r}
+
+weather_df %>%
+  ggplot(aes(x = name, y = prcp, fill = name)) +
+  geom_violin()
+
+```
+
+Ridge Plot:
+
+```{r}
+
+weather_df %>%
+  ggplot(aes(x = prcp, y = name)) + 
+  geom_density_ridges()
+
+```
+None of these look particularly good because the data is so right-skewed...
+
+```{r}
+
+weather_df %>%
+  filter(prcp < 750 & prcp > 10) %>%
+  ggplot(aes(x = prcp, fill = name)) + 
+  geom_density(alpha = 0.4)
+  
 
 ```
 
