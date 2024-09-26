@@ -269,3 +269,30 @@ weather_df %>%
 
 ```
 
+## Saving and embedding plots
+
+Saving plots:
+
+```{r}
+
+ggp_weather_save = 
+  weather_df %>%
+  ggplot(aes(x = date, y = tmax, color = name)) + 
+  geom_point()
+
+ggsave("ggp_weather.pdf", ggp_weather_save, width = 8, height = 6)
+
+```
+
+Embedding plots:
+
+```{r, fig.width = 6, fig.asp = .6}
+
+ggp_weather_save = 
+  weather_df %>%
+  ggplot(aes(x = date, y = tmax, color = name)) + 
+  geom_point()
+
+```
+
+Note: "fig.asp = .6" instructs the width to be .6 times the height.
