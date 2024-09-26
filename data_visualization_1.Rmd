@@ -70,5 +70,51 @@ ggp_weather_scatterplot_2.1
 
 ```
 
+Let's use faceting real quick:
+
+```{r}
+
+ggp_weather_scatterplot_2.2 = 
+  weather_df %>%
+  ggplot(aes(x = tmin, y = tmax, color = name)) + 
+  geom_point(alpha = 0.5, size = 0.8) + 
+  geom_smooth(se = FALSE) + 
+  facet_grid (. ~ name)
+
+ggp_weather_scatterplot_2.2
+
+```
+
+## A More Interesting Scatterplot
+
+```{r}
+
+ggp_weather_scatterplot_3 = 
+  weather_df %>%
+  ggplot(aes(x = date, y = tmax, color = name, size = prcp)) + 
+  geom_point(alpha = 0.5) + 
+  geom_smooth(se = FALSE) + 
+  facet_grid(. ~ name)
+
+ggp_weather_scatterplot_3
+
+
+```
+
+## Learning Assessment
+
+```{r}
+
+ggp_weather_LA_plot = 
+  weather_df %>%
+  filter(name == "CentralPark_NY") %>%
+  mutate(tmax_F = tmax * (9/5) + 32,
+         tmin_F = tmin * (9/5) + 32) %>%
+  ggplot(aes(x = tmin_F, y = tmax_F)) + 
+  geom_point() + 
+  geom_smooth(se = FALSE)
+
+ggp_weather_LA_plot
+
 ```
 
