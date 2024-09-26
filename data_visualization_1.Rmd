@@ -111,10 +111,44 @@ ggp_weather_LA_plot =
   mutate(tmax_F = tmax * (9/5) + 32,
          tmin_F = tmin * (9/5) + 32) %>%
   ggplot(aes(x = tmin_F, y = tmax_F)) + 
-  geom_point() + 
-  geom_smooth(se = FALSE)
+  geom_point(alpha = 0.8) + 
+  geom_smooth(method = "lm", se = FALSE)
 
 ggp_weather_LA_plot
 
 ```
+## Small Things
+
+Sometimes, a hex plot can work better with large datasets (> 10000 data points)
+
+```{r}
+
+weather_df %>%
+  ggplot(aes(x = tmin, y = tmax)) + 
+  geom_hex()
+
+```
+Be careful where you specify colors - if you do it in the aesthetic mappings command, ggplot will interpret "blue" as a variable rather than a color, making the plot red instead:
+
+```{r}
+
+weather_df %>%
+  ggplot(aes(x = tmin, y = tmax, color = "blue")) + 
+  geom_point()
+
+weather_df %>%
+  ggplot(aes(x = tmin, y = tmax)) + 
+  geom_point(color = "blue")
+
+```
+## Univariate Plots
+
+```{r}
+
+weather_df %>%
+  ggplot(aes(x = tmin)) + 
+  geom_histogram()
+ 
+```
+
 
