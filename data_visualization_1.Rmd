@@ -143,6 +143,8 @@ weather_df %>%
 ```
 ## Univariate Plots
 
+#### Histograms
+
 ```{r}
 
 weather_df %>%
@@ -150,5 +152,57 @@ weather_df %>%
   geom_histogram()
  
 ```
+```{r}
 
+weather_df %>%
+  ggplot(aes(x = tmin, fill = name)) + 
+  geom_histogram(position = "dodge")
+
+```
+Using facets can help make the previous plot easier on the eyes:
+
+```{r}
+
+weather_df %>%
+  ggplot(aes(x = tmin, fill = name)) + 
+  geom_histogram(color = "black") + 
+  facet_grid(. ~ name)
+ 
+```
+That plot wasn't excellent either, so let's try a density plot instead:
+
+```{r}
+
+weather_df %>%
+  ggplot(aes(x = tmin, fill = name)) + 
+  geom_density(alpha = 0.4)
+
+```
+#### Boxplots
+
+```{r}
+
+weather_df %>%
+  ggplot(aes(x = name, y = tmin, fill = name)) + 
+  geom_boxplot()
+
+```
+#### Violinplots
+
+```{r}
+
+weather_df %>%
+  ggplot(aes(x = name, y = tmin, fill = name)) + 
+  geom_violin()
+
+```
+#### Ridge Plots
+
+```{r}
+
+weather_df %>% 
+  ggplot(aes(x = tmin, y = name)) + 
+  geom_density_ridges()
+
+```
 
