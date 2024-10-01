@@ -1,0 +1,12 @@
+---
+title: "data_visualization_2"
+author: "Joe LaRocca"
+date: "2024-10-01"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
