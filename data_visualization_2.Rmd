@@ -8,5 +8,158 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
+library(patchwork)
+library(haven)
+```
+
+```{r}
+
+weather_df = 
+  rnoaa::meteo_pull_monitors(
+    c("USW00094728", "USW00022534", "USS0023B17S"),
+    var = c("PRCP", "TMIN", "TMAX"), 
+    date_min = "2021-01-01",
+    date_max = "2022-12-31") |>
+  mutate(
+    name = case_match(
+      id, 
+      "USW00094728" ~ "CentralPark_NY", 
+      "USW00022534" ~ "Molokai_HI",
+      "USS0023B17S" ~ "Waterhole_WA"),
+    tmin = tmin / 10,
+    tmax = tmax / 10) |>
+  select(name, id, everything())
+
+```
+#### Fancy Scatterplot
+
+```{r}
+
+ggp_scatter =
+  weather_df %>%
+  ggplot(aes(x = tmin, y = tmax, color = name)) + 
+  geom_point(alpha = 0.4) + 
+  labs(
+    title = "Temperature Scatterplot",
+    x = "Minimum Temp (°C)",
+    y = "Maximum Temp (°C)",
+    color = "Location",
+    caption = "Weather data taken from rnoaa package for three stations"
+  ) + 
+  scale_x_continuous(
+    breaks = c(-15, 0, 15),
+    labels = c("-15°C", "0°C", "15°C")
+  ) + 
+  scale_y_continuous(
+    limits = c(0, 30),
+  ) + 
+  viridis::scale_color_viridis(discrete = TRUE) 
+
+```
+
+```{r}
+
+ggp_scatter + 
+  theme_bw() + 
+  theme(legend.position = "bottom")
+
+```
+```{r}
+
+ggp_scatter + 
+  theme_minimal() + 
+  theme(legend.position = "bottom")
+
+```
+## Learning Assessment 1
+
+```{r}
+
+ggp_LA = 
+  weather_df %>%
+  ggplot(aes(x = date, y = tmax, color = name, size = prcp)) + 
+  geom_point(alpha = 0.5) + 
+  geom_smooth(se = FALSE) +
+  labs(
+    title = "Temperature by Date",
+    x = "Date",
+    y = "Maxmimum Temperature (°C)", 
+    color = "Location",
+    caption = "Weather data taken from rnoaa package for three stations",
+    size = "Precipitation (mm)"
+  ) +
+  viridis::scale_color_viridis(discrete = TRUE) + 
+  theme_minimal() + 
+  theme(legend.position = "bottom")
+
+ggp_LA
+
+```
+## Different Datasets with Different Geometries
+
+```{r}
+
+central_park_df = 
+  weather_df %>%
+  filter(name == "CentralPark_NY")
+
+molokai_df = 
+  weather_df %>%
+  filter(name == "Molokai_HI")
+
+molokai_df %>%
+  ggplot(aes(x = date, y = tmax, color = name)) +
+  geom_point() +
+  geom_line(data = central_park_df)
+
+```
+
+
+## Multiple Panels
+
+```{r}
+
+weather_df %>%
+  ggplot(aes(x = tmax, fill = name)) + 
+  geom_density() + 
+  facet_grid(. ~ name)
+
+```
+
+#### "Adding" plots requires the "patchwork" package
+
+```{r}
+
+ggp_tmax_tmin = 
+  weather_df %>%
+    ggplot(aes(x = tmin, y = tmax, color = name)) + 
+    geom_point(alpha = 0.3) 
+
+ggp_tmax_density = 
+  weather_df %>%
+    ggplot(aes(x = tmax, fill = name)) + 
+    geom_density(alpha = 0.3) 
+
+ggp_tmax_date = 
+  weather_df %>%
+  ggplot(aes(x = date, y = tmax, color = name)) + 
+  geom_point() + 
+  geom_smooth(se = FALSE)
+
+(ggp_tmax_tmin + ggp_tmax_density) / ggp_tmax_date
+
+```
+
+
+## Data Manipulation
+
+```{r}
+
+weather_df %>%
+  mutate(name = fct_relevel(
+    name, c("Molokai_HI", "CentralPark_NY", "Waterhole_WA"))) %>%
+  ggplot(aes(x = name, y = tmax, fill = name)) + 
+  geom_violin(alpha = 0.5)
+
 ```
 
