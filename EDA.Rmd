@@ -7,24 +7,132 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
 ```
 
-## R Markdown
+```{r}
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+weather_df = 
+  rnoaa::meteo_pull_monitors(
+    c("USW00094728", "USW00022534", "USS0023B17S"),
+    var = c("PRCP", "TMIN", "TMAX"), 
+    date_min = "2021-01-01",
+    date_max = "2022-12-31") |>
+  mutate(
+    name = case_match(
+      id, 
+      "USW00094728" ~ "CentralPark_NY", 
+      "USW00022534" ~ "Molokai_HI",
+      "USS0023B17S" ~ "Waterhole_WA"),
+    tmin = tmin / 10,
+    tmax = tmax / 10,
+   month = lubridate::floor_date(date, unit = "month")) |>
+  select(name, id, everything())
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
 
-```{r cars}
-summary(cars)
 ```
 
-## Including Plots
+## Making Some Plots
 
-You can also embed plots, for example:
+#### Histogram of Precipitation
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r}
+
+weather_df %>%
+  ggplot(aes(x = prcp)) + 
+  geom_histogram(fill = "dodgerblue", color = "black")
+
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+When you see the outliers, look at the data frame to find them, and then you can look up why the outliers exist (for example, the two outliers from New York were in the wake of Hurricanes Henry and Ida in 2021).
+
+```{r}
+
+weather_df %>%
+  filter(prcp > 1000)
+
+```
+
+#### Scatterplot of Tmin vs Tmax
+
+```{r}
+
+weather_df %>%
+  filter(tmax > 20, tmax < 30) %>%
+  ggplot(aes(x = tmin, y = tmax, col = name, shape = name)) + 
+  geom_point()
+
+```
+
+## Summarizing Variables
+
+#### Total Observations
+
+```{r}
+
+weather_df %>%
+  group_by(name) %>%
+  summarize(n_obs = n())
+
+```
+
+```{r}
+
+weather_df %>%
+  group_by(month) %>%
+  summarize(n_obs = n())
+
+```
+
+```{r}
+
+weather_df %>%
+  group_by(name, month) %>%
+  summarize(n_obs = n())
+```
+
+#### 2x2 tables
+
+```{r}
+
+weather_df %>%
+  filter(name != "Molokai_HI") %>%
+  drop_na(tmax) %>%
+  mutate(
+    cold = case_when(
+      tmax < 5 ~ "cold",
+      tmax >= 5 ~ "not_cold"
+    )
+  ) %>%
+  group_by(name, cold) %>%
+  summarize(count = n()) 
+
+```
+
+```{r}
+
+weather_df %>%
+  filter(name != "Molokai_HI") %>%
+  drop_na(tmax) %>%
+  mutate(
+    cold = case_when(
+      tmax < 5 ~ "cold",
+      tmax >= 5 ~ "not_cold"
+    )
+  ) %>%
+  janitor::tabyl(name, cold)
+
+```
+
+## General Numeric Summaries
+
+```{r}
+
+weather_df %>%
+  group_by(name) %>%
+  summarize(
+    mean_tmax = mean(tmax, na.rm = TRUE)
+  )
+
+```
+
