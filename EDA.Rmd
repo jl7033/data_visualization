@@ -126,13 +126,126 @@ weather_df %>%
 
 ## General Numeric Summaries
 
+You can make plots with summary statistics -- just watch out for what you're grouping by!
+
+```{r}
+
+weather_df %>%
+  group_by(name, month) %>%
+  summarize(
+    mean_tmax = mean(tmax, na.rm = TRUE),
+    median_tmin = median(tmin, na.rm = TRUE),
+    sd_prcp = sd(prcp, na.rm = TRUE)
+  ) %>%
+  ggplot(aes(x = month, y = mean_tmax, color = name)) + 
+  geom_point() + 
+  geom_line() + 
+  theme(legend.position = "bottom")
+
+
+```
+
+```{r}
+
+weather_df %>%
+  group_by(name, month) %>%
+  summarize(mean_tmax = mean(tmax, na.rm = TRUE)) %>%
+   pivot_wider(
+    names_from = name,
+    values_from = mean_tmax) %>%
+  knitr::kable(digits = 1)
+
+```
+
+## Grouped Mutates
+
+#### Min Rank Function
+
+The `mutate()` function remembers that grouping layers exist!
+
 ```{r}
 
 weather_df %>%
   group_by(name) %>%
+  mutate(mean_tmax = mean(tmax, na.rm = TRUE),
+         centered_tmax = tmax - mean_tmax) %>%
+  ggplot(aes(x = date, y = centered_tmax, color = name)) + 
+  geom_point()
+
+```
+
+The `min_rank` function is ranking the lowest maximum temperatures in each location, since we grouped by name. "1" represents the lowest max temp, "2" the second-lowest, etc. Using `desc()` within the `min_rank` will put out the maximum high temps instead.
+
+```{r}
+
+weather_df %>%
+  group_by(name) %>%
+  mutate(
+    temp_rank = min_rank(tmax)
+  ) %>%
+  filter(temp_rank <= 3)
+
+```
+
+```{r}
+
+weather_df %>%
+  group_by(name) %>%
+  filter(min_rank(tmax) <= 3) %>%
+  arrange(tmax)
+```
+
+#### Lag Function
+
+The `lag()` function reports the value of a variable from the previous row. For example, lagging the max temp reports the max temp from the previous day.
+
+```{r}
+
+weather_df %>%
+  group_by(name) %>%
+  mutate(
+    lagged_temp = lag(tmax),
+    temp_change = tmax - lagged_temp
+  ) %>%
+  filter(min_rank(temp_change) <= 3)
+
+```
+
+```{r}
+
+weather_df %>%
+  group_by(name) %>%
+  mutate(
+    lagged_temp = lag(tmax),
+    temp_change = tmax - lagged_temp
+  ) %>%
   summarize(
-    mean_tmax = mean(tmax, na.rm = TRUE)
+    mean_tmax_change = mean(temp_change, na.rm = TRUE),
+    sd_tmax_change = sd(temp_change, na.rm = TRUE)
   )
+
+```
+
+## Extending Knowledge to Pulse Dataset
+
+```{r}
+
+pulse_df = 
+  read_sas("data/public_pulse_data.sas7bdat") 
+
+pulse_df %>%
+  janitor::clean_names() %>%
+  pivot_longer(
+    cols = bdi_score_bl:bdi_score_12m,
+    names_to = "visit",
+    values_to = "bdi_score",
+    names_prefix = "bdi_score_"
+  ) %>%
+  mutate(visit = ifelse(visit == "bl", "00m", visit)) %>%
+  group_by(visit) %>%
+  summarize(mean_bdi = mean(bdi_score, na.rm = TRUE),
+            median_bdi = median(bdi_score, na.rm = TRUE),
+            sd_bdi = sd(bdi_score, na.rm = TRUE))
 
 ```
 
