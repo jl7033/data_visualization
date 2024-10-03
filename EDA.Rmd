@@ -249,3 +249,68 @@ pulse_df %>%
 
 ```
 
+```{r}
+
+pulse_df %>%
+  janitor::clean_names() %>%
+  pivot_longer(
+    cols = bdi_score_bl:bdi_score_12m,
+    names_to = "visit",
+    values_to = "bdi_score",
+    names_prefix = "bdi_score_"
+  ) %>%
+  mutate(visit = ifelse(visit == "bl", "00m", visit)) %>%
+  group_by(visit) %>%
+  summarize(
+    mean_bdi = mean(bdi_score, na.rm = TRUE)
+  ) %>%
+  knitr::kable(digits = 1)
+
+```
+
+## FAS Litters
+
+```{r}
+
+litters_df = 
+  read_csv("data/FAS_litters.csv", na = c("NA", ".", " ")) %>%
+  janitor::clean_names() %>%
+  separate(
+    group, into = c("dose", "tx_day"), sep = 3
+  )
+
+pups_df = 
+  read_csv("data/FAS_pups.csv", na = c("NA", ".", " ")) %>%
+  janitor::clean_names()
+
+fas_df = 
+  left_join(pups_df, litters_df, by = "litter_number")
+
+```
+
+Compute a table that we care about.
+
+```{r}
+
+fas_df %>%
+  drop_na(dose) %>%
+  group_by(dose, tx_day) %>%
+  summarize(mean_pivot = mean(pd_pivot, na.rm = TRUE))
+
+```
+
+```{r}
+
+fas_df %>%
+  drop_na(dose) %>%
+  group_by(dose, tx_day) %>%
+  summarize(mean_pivot = mean(pd_pivot, na.rm = TRUE)) %>%
+  pivot_wider(
+    names_from = tx_day,
+    values_from = mean_pivot
+  ) %>%
+  knitr::kable(digits = 2)
+  
+
+```
+
